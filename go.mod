@@ -1,10 +1,10 @@
 module iudx_domain_specific_apis
 
-go 1.21.0
+go 1.21.2
 
 require github.com/gin-gonic/gin v1.9.1
 
-require github.com/bradfitz/gomemcache v0.0.0-20230611145640-acc696258285 // indirect
+require github.com/bradfitz/gomemcache v0.0.0-20230611145640-acc696258285
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
@@ -12,6 +12,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-gorp/gorp/v3 v3.0.1
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
