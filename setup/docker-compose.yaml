@@ -1,0 +1,53 @@
+version: '3'
+services:
+  timescale:
+    image: timescale/timescaledb:latest-pg13
+    ports:
+      - 15432:5432
+    environment:
+      - TZ=Asia/Kolkata
+      - POSTGRES_PASSWORD=timescaledb
+      - POSTGRES_USER=root
+      - POSTGRES_DB=iudx-cil
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks:
+      - cil-net
+    volumes:
+      - db-data:/var/lib/postgresql/data/pgdata
+      - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "timescale@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "timescale"
+    ports:
+      - 5050:80
+    networks:
+      - cil-net
+    depends_on:
+      - timescale
+    
+  cil-server:
+    build: 
+      context: ../
+      dockerfile: setup/Dockerfile
+    container_name: cil-server
+    env_file:
+      - ../.env
+    volumes:
+      - ../:/app
+    ports:
+      - 3030:3030
+    depends_on:
+      - timescale
+    networks:
+      - cil-net
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  cil-net:
+    driver: bridge
