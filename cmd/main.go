@@ -13,6 +13,8 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 
+	cors "github.com/rs/cors/wrapper/gin"
+
 	"iudx_domain_specific_apis/pkg/configs"
 	"iudx_domain_specific_apis/pkg/db"
 	"iudx_domain_specific_apis/pkg/logger"
@@ -29,6 +31,10 @@ func main() {
 	db.Init()
 
 	router := gin.Default()
+
+	// ? CORS Enabled
+	router.Use(cors.Default())
+
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	routes.AirQuality(router)

@@ -24,3 +24,20 @@ CREATE TABLE public.forecast
     air_quality_index       float,
     location_coordinates    point
 );
+
+CREATE TABLE public.aqm_actual (
+  geojson_id            int,
+  observationdatetime   timestamp without time zone,
+  pollutant_val         double precision
+);
+
+CREATE TABLE public.aqm_forecast (
+  geojson_id            int,
+  observationdatetime   timestamp without time zone,
+  pollutant_val         double precision
+);
+
+CREATE TABLE public.aqm_geojson (
+  geojson               text,
+  geojson_id            int
+);

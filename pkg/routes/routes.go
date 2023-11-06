@@ -14,4 +14,7 @@ func AirQuality(router *gin.Engine) {
 
 	spatialForecast := new(controllers.SpatialForecastController)
 	router.POST("/airquality/spatialForecast", middleware.APIKeyAuthMiddleware(), spatialForecast.GetSpatialForecast)
+
+	aqmSpatialForecast := new(controllers.AQMSpatialForecasrController)
+	router.POST("/airquality/aqmSpatialForecast", middleware.APIKeyAuthMiddleware(), aqmSpatialForecast.GetAQMSpatialForecast)
 }
