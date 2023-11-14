@@ -3,15 +3,17 @@ package controllers
 import (
 	"iudx_domain_specific_apis/pkg/logger"
 	"iudx_domain_specific_apis/pkg/models"
+	"iudx_domain_specific_apis/pkg/responses"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AQMSpatialForecastRequestBody struct {
-	ForecastStart string `json:"forecastStart"`
-	ForecastEnd   string `json:"forecastEnd"`
-	GeoJson_Id    int32  `json:"geojson_id"`
+	ForecastStart time.Time `json:"forecastStart" time_format:"2006-01-02T15:04:05Z07:00"`
+	ForecastEnd   time.Time `json:"forecastEnd" time_format:"2006-01-02T15:04:05Z07:00"`
+	MeasuredValue string    `json:"measuredValue"`
 }
 
 type AQMSpatialForecasrController struct{}
@@ -25,7 +27,7 @@ func (ctrl AQMSpatialForecasrController) GetAQMSpatialForecast(c *gin.Context) {
 		return
 	}
 
-	aqmSpatialForecasts, err := aqmSpatialForecastModel.GetAQMSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.GeoJson_Id)
+	aqmSpatialForecasts, err := aqmSpatialForecastModel.GetAQMSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.MeasuredValue)
 
 	if err != nil {
 		logger.Error.Println(err.Error())
@@ -33,5 +35,5 @@ func (ctrl AQMSpatialForecasrController) GetAQMSpatialForecast(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, aqmSpatialForecasts)
+	c.JSON(http.StatusOK, responses.FormatAQMSpatialForecastResponse(aqmSpatialForecasts))
 }
