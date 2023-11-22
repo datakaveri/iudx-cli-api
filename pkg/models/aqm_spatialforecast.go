@@ -22,6 +22,6 @@ func (m AQMSpatialForecastModel) GetAQMSpatialForecasts(startTime time.Time, end
 		inner join kdmc_aqm_interpolation_actual_data on kdmc_aqm_geojsons.hex_id = kdmc_aqm_interpolation_actual_data.hex_id
 		where observationdatetime >= $1 and observationdatetime <= $2
 		order by kdmc_aqm_interpolation_actual_data.observationdatetime
-		`, startTime, endTime)
+	`, startTime, endTime)
 	return aqmSpatialForecast, err
 }
