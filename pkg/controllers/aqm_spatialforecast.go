@@ -16,18 +16,18 @@ type AQMSpatialForecastRequestBody struct {
 	MeasuredValue string    `json:"measuredValue"`
 }
 
-type AQMSpatialForecasrController struct{}
+type AQMSpatialForecastController struct{}
 
 var aqmSpatialForecastModel = new(models.AQMSpatialForecastModel)
 
-func (ctrl AQMSpatialForecasrController) GetAQMSpatialForecast(c *gin.Context) {
+func (ctrl AQMSpatialForecastController) GetAQMSpatialForecast(c *gin.Context) {
 	var reqBody AQMSpatialForecastRequestBody
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	aqmSpatialForecasts, err := aqmSpatialForecastModel.GetAQMSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.MeasuredValue)
+	aqmSpatialForecasts, aqmSpatialForecastMinMax, err := aqmSpatialForecastModel.GetAQMSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.MeasuredValue)
 
 	if err != nil {
 		logger.Error.Println(err.Error())
@@ -35,5 +35,5 @@ func (ctrl AQMSpatialForecasrController) GetAQMSpatialForecast(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.FormatAQMSpatialForecastResponse(aqmSpatialForecasts))
+	c.JSON(http.StatusOK, responses.FormatAQMSpatialForecastResponse(aqmSpatialForecasts, aqmSpatialForecastMinMax[0], reqBody.MeasuredValue))
 }

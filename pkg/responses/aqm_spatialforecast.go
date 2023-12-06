@@ -2,8 +2,9 @@ package responses
 
 import (
 	"encoding/json"
-	"fmt"
 	"iudx_domain_specific_apis/pkg/models"
+	"sort"
+	"time"
 )
 
 type TimeseriesAQMSpatialForecastResponse struct {
@@ -13,7 +14,9 @@ type TimeseriesAQMSpatialForecastResponse struct {
 }
 
 type PropertiesAQMSpatialForecastResponse struct {
-	MeasuredValue string `json:"measuredValue"`
+	MeasuredValue string  `json:"measuredValue"`
+	MinValue      float32 `json:"min"`
+	MaxValue      float32 `json:"max"`
 }
 
 type AQMSpatialForecastResponse struct {
@@ -21,13 +24,19 @@ type AQMSpatialForecastResponse struct {
 	Properties PropertiesAQMSpatialForecastResponse `json:"properties"`
 }
 
-func FormatAQMSpatialForecastResponse(aqmSpatialForecasts []models.AQMSpatialForecast) AQMSpatialForecastResponse {
+type ByDate []time.Time
+
+func (a ByDate) Len() int           { return len(a) }
+func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByDate) Less(i, j int) bool { return a[i].Before(a[j]) }
+
+func FormatAQMSpatialForecastResponse(aqmSpatialForecasts []models.AQMSpatialForecast, aqmSpatialForecastMinMax models.AQMSpatialForecastMinMax, measuredValue string) AQMSpatialForecastResponse {
 	valueMap := make(map[string][]float32)
 	geoJsonMap := make(map[string][]json.RawMessage)
 
 	for _, aqmSpatialForecast := range aqmSpatialForecasts {
 		// ts := aqmSpatialForecast.ObservationDateTime.String()
-		ts := aqmSpatialForecast.ObservationDateTime.Format("2006-01-02T15:04:05+00:00")
+		ts := aqmSpatialForecast.ObservationDateTime.Format("2006-01-02T15:04:05")
 		valueMap[ts] = append(valueMap[ts], aqmSpatialForecast.PollutantVal)
 		geoJsonMap[ts] = append(geoJsonMap[ts], json.RawMessage(aqmSpatialForecast.GeoJson))
 	}
@@ -36,16 +45,22 @@ func FormatAQMSpatialForecastResponse(aqmSpatialForecasts []models.AQMSpatialFor
 	var values [][]float32
 	var geoJson [][]json.RawMessage
 
-	for timestamp, val := range valueMap {
-		timestamps = append(timestamps, timestamp)
-		values = append(values, val)
+	keys := make([]time.Time, 0, len(valueMap))
+
+	for k := range valueMap {
+		layout := "2006-01-02T15:04:05"
+		time, _ := time.Parse(layout, k)
+		keys = append(keys, time)
 	}
 
-	for _, geo := range geoJsonMap {
-		geoJson = append(geoJson, geo)
-	}
+	sort.Sort(ByDate(keys))
 
-	fmt.Println(timestamps)
+	for _, timestamp := range keys {
+		newStamp := timestamp.Format("2006-01-02T15:04:05")
+		timestamps = append(timestamps, newStamp)
+		values = append(values, valueMap[newStamp])
+		geoJson = append(geoJson, geoJsonMap[newStamp])
+	}
 
 	resultAQMSpatialForecastResponse := AQMSpatialForecastResponse{
 		Timeseries: TimeseriesAQMSpatialForecastResponse{
@@ -54,7 +69,9 @@ func FormatAQMSpatialForecastResponse(aqmSpatialForecasts []models.AQMSpatialFor
 			Values:     values,
 		},
 		Properties: PropertiesAQMSpatialForecastResponse{
-			MeasuredValue: "co2",
+			MeasuredValue: measuredValue,
+			MaxValue:      aqmSpatialForecastMinMax.Max,
+			MinValue:      aqmSpatialForecastMinMax.Min,
 		},
 	}
 
