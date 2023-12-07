@@ -33,8 +33,7 @@ func (m AQMSpatialForecastModel) GetAQMSpatialForecasts(startTime time.Time, end
 		select min(kdmc_aqm_interpolation_actual_data.`+measuredValue+`), 
 		max(kdmc_aqm_interpolation_actual_data.`+measuredValue+`) 
 		from kdmc_aqm_interpolation_actual_data
-		where observationdatetime >= $1 and observationdatetime <= $2
-	`, startTime, endTime)
+	`)
 
 	return aqmSpatialForecast, aqmSpatialForecastMinMax, err
 }
