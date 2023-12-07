@@ -33,7 +33,11 @@ func main() {
 	router := gin.Default()
 
 	// ? CORS Enabled
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}))
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 

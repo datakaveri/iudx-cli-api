@@ -2,6 +2,5 @@ tmp
 
 co2_inference_data.csv
 raipur_aqm_raw_data.csv
-
-.env
+data
 .env
