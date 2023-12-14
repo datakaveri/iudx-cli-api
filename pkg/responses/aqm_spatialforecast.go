@@ -17,6 +17,8 @@ type PropertiesAQMSpatialForecastResponse struct {
 	MeasuredValue string  `json:"measuredValue"`
 	MinValue      float32 `json:"min"`
 	MaxValue      float32 `json:"max"`
+	Average       float32 `json:"average"`
+	Stddev        float32 `json:"stddev"`
 }
 
 type AQMSpatialForecastResponse struct {
@@ -72,6 +74,8 @@ func FormatAQMSpatialForecastResponse(aqmSpatialForecasts []models.AQMSpatialFor
 			MeasuredValue: measuredValue,
 			MaxValue:      aqmSpatialForecastMinMax.Max,
 			MinValue:      aqmSpatialForecastMinMax.Min,
+			Average:       aqmSpatialForecastMinMax.Average,
+			Stddev:        aqmSpatialForecastMinMax.Stddev,
 		},
 	}
 

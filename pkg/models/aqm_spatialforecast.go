@@ -12,8 +12,10 @@ type AQMSpatialForecast struct {
 }
 
 type AQMSpatialForecastMinMax struct {
-	Min float32 `db:"min" json:"min"`
-	Max float32 `db:"max" json:"max"`
+	Min     float32 `db:"min" json:"min"`
+	Max     float32 `db:"max" json:"max"`
+	Average float32 `db:"average" json:"average"`
+	Stddev  float32 `db:"stddev" json:"stddev"`
 }
 
 type AQMSpatialForecastModel struct{}
@@ -31,7 +33,9 @@ func (m AQMSpatialForecastModel) GetAQMSpatialForecasts(startTime time.Time, end
 
 	_, err = db.GetDB().Select(&aqmSpatialForecastMinMax, `
 		select min(kdmc_aqm_interpolation_actual_data.`+measuredValue+`), 
-		max(kdmc_aqm_interpolation_actual_data.`+measuredValue+`) 
+		max(kdmc_aqm_interpolation_actual_data.`+measuredValue+`) ,
+		average(stats_agg(kdmc_aqm_interpolation_actual_data.`+measuredValue+`)),
+		stddev(stats_agg(kdmc_aqm_interpolation_actual_data.`+measuredValue+`), 'pop')
 		from kdmc_aqm_interpolation_actual_data
 	`)
 
