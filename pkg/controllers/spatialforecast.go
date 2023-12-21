@@ -21,19 +21,19 @@ type SpatialForecastController struct{}
 var spatialForecastModel = new(models.SpatialForecastModel)
 
 func (ctrl SpatialForecastController) GetSpatialForecast(c *gin.Context) {
-
 	var reqBody SpatialForecastRequestBody
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	spatialForecasts, err := spatialForecastModel.GetSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd)
+	spatialForecasts, spatialForecastMinMax, err := spatialForecastModel.GetSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.MeasuredValue)
+
 	if err != nil {
 		logger.Error.Println(err.Error())
 		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Could not get forecasts"})
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.FormatSpatialForecastResponse(spatialForecasts))
+	c.JSON(http.StatusOK, responses.FormatSpatialForecastResponse(spatialForecasts, spatialForecastMinMax[0], reqBody.MeasuredValue))
 }
