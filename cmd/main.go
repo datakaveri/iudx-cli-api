@@ -31,6 +31,7 @@ func main() {
 	db.Init()
 
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
 
 	// ? CORS Enabled
 	router.Use(cors.New(cors.Options{

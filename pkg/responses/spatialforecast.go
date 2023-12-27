@@ -3,6 +3,8 @@ package responses
 import (
 	"encoding/json"
 	"iudx_domain_specific_apis/pkg/models"
+	"sort"
+	"time"
 )
 
 type TimeseriesSpatialForecastResponse struct {
@@ -12,7 +14,11 @@ type TimeseriesSpatialForecastResponse struct {
 }
 
 type PropertiesSpatialForecastResponse struct {
-	MeasuredValue string `json:"measuredValue"`
+	MeasuredValue string  `json:"measuredValue"`
+	MinValue      float32 `json:"min"`
+	MaxValue      float32 `json:"max"`
+	Average       float32 `json:"average"`
+	Stddev        float32 `json:"stddev"`
 }
 
 type SpatialForecastResponse struct {
@@ -20,39 +26,56 @@ type SpatialForecastResponse struct {
 	Properties PropertiesSpatialForecastResponse `json:"properties"`
 }
 
-func FormatSpatialForecastResponse(spatialForecasts []models.SpatialForecast) SpatialForecastResponse {
+type ByDate []time.Time
+
+func (a ByDate) Len() int           { return len(a) }
+func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByDate) Less(i, j int) bool { return a[i].Before(a[j]) }
+
+func FormatSpatialForecastResponse(spatialForecasts []models.SpatialForecast, spatialForecastMinMax models.SpatialForecastMinMax, measuredValue string) SpatialForecastResponse {
 	valueMap := make(map[string][]float32)
 	geoJsonMap := make(map[string][]json.RawMessage)
 
 	for _, spatialForecast := range spatialForecasts {
-		ts := spatialForecast.ObservationDateTime.Format("2006-01-02T15:04:05+00:00")
+		// ts := aqmSpatialForecast.ObservationDateTime.String()
+		ts := spatialForecast.ObservationDateTime.Format("2006-01-02T15:04:05")
 		valueMap[ts] = append(valueMap[ts], spatialForecast.PollutantVal)
-
-		geoJsonMap[ts] = append(geoJsonMap[ts], spatialForecast.GeoJson)
+		geoJsonMap[ts] = append(geoJsonMap[ts], json.RawMessage(spatialForecast.GeoJson))
 	}
 
 	var timestamps []string
 	var values [][]float32
 	var geoJson [][]json.RawMessage
 
-	// Populate the slices from the maps
-	for timestamp, val := range valueMap {
-		timestamps = append(timestamps, timestamp)
-		values = append(values, val)
+	keys := make([]time.Time, 0, len(valueMap))
+
+	for k := range valueMap {
+		layout := "2006-01-02T15:04:05"
+		time, _ := time.Parse(layout, k)
+		keys = append(keys, time)
 	}
 
-	for _, geo := range geoJsonMap {
-		geoJson = append(geoJson, geo)
+	sort.Sort(ByDate(keys))
+
+	for _, timestamp := range keys {
+		newStamp := timestamp.Format("2006-01-02T15:04:05")
+		timestamps = append(timestamps, newStamp)
+		values = append(values, valueMap[newStamp])
+		geoJson = append(geoJson, geoJsonMap[newStamp])
 	}
 
 	resultSpatialForecastResponse := SpatialForecastResponse{
 		Timeseries: TimeseriesSpatialForecastResponse{
 			Timestamps: timestamps,
-			Values:     values,
 			GeoJson:    geoJson,
+			Values:     values,
 		},
 		Properties: PropertiesSpatialForecastResponse{
-			MeasuredValue: "co2",
+			MeasuredValue: measuredValue,
+			MaxValue:      spatialForecastMinMax.Max,
+			MinValue:      spatialForecastMinMax.Min,
+			Average:       spatialForecastMinMax.Average,
+			Stddev:        spatialForecastMinMax.Stddev,
 		},
 	}
 

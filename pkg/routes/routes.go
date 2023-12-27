@@ -12,9 +12,15 @@ func AirQuality(router *gin.Engine) {
 	forecast := new(controllers.ForecastController)
 	router.POST("/airquality/forecast/:deviceID", middleware.APIKeyAuthMiddleware(), forecast.GetForecasts)
 
+	// spatialForecast := new(controllers.SpatialForecastController_LEGACY)
+	// router.POST("/airquality/spatialForecast", middleware.APIKeyAuthMiddleware(), spatialForecast.GetSpatialForecast_LEGACY)
+
 	spatialForecast := new(controllers.SpatialForecastController)
 	router.POST("/airquality/spatialForecast", middleware.APIKeyAuthMiddleware(), spatialForecast.GetSpatialForecast)
 
-	aqmSpatialForecast := new(controllers.AQMSpatialForecastController)
-	router.POST("/airquality/aqmSpatialForecast", middleware.APIKeyAuthMiddleware(), aqmSpatialForecast.GetAQMSpatialForecast)
+	spatialInterpolation := new(controllers.SpatialInterpolationController)
+	router.POST("/airquality/spatialInterpolation", middleware.APIKeyAuthMiddleware(), spatialInterpolation.GetSpatialInterpolation)
+
+	landing := new(controllers.LandingController)
+	router.GET("/", landing.Landing)
 }

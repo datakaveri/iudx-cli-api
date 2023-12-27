@@ -10,30 +10,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AQMSpatialForecastRequestBody struct {
+type SpatialForecastRequestBody_LEGACY struct {
 	ForecastStart time.Time `json:"forecastStart" time_format:"2006-01-02T15:04:05Z07:00"`
 	ForecastEnd   time.Time `json:"forecastEnd" time_format:"2006-01-02T15:04:05Z07:00"`
 	MeasuredValue string    `json:"measuredValue"`
 }
 
-type AQMSpatialForecastController struct{}
+type SpatialForecastController_LEGACY struct{}
 
-var aqmSpatialForecastModel = new(models.AQMSpatialForecastModel)
+var spatialForecastModel_LEGACY = new(models.SpatialForecastModel_LEGACY)
 
-func (ctrl AQMSpatialForecastController) GetAQMSpatialForecast(c *gin.Context) {
-	var reqBody AQMSpatialForecastRequestBody
+func (ctrl SpatialForecastController_LEGACY) GetSpatialForecast_LEGACY(c *gin.Context) {
+
+	var reqBody SpatialForecastRequestBody_LEGACY
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
 
-	aqmSpatialForecasts, aqmSpatialForecastMinMax, err := aqmSpatialForecastModel.GetAQMSpatialForecasts(reqBody.ForecastStart, reqBody.ForecastEnd, reqBody.MeasuredValue)
-
+	spatialForecasts, err := spatialForecastModel_LEGACY.GetSpatialForecasts_LEGACY(reqBody.ForecastStart, reqBody.ForecastEnd)
 	if err != nil {
 		logger.Error.Println(err.Error())
 		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Could not get forecasts"})
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.FormatAQMSpatialForecastResponse(aqmSpatialForecasts, aqmSpatialForecastMinMax[0], reqBody.MeasuredValue))
+	c.JSON(http.StatusOK, responses.FormatSpatialForecastResponse_LEGACY(spatialForecasts))
 }

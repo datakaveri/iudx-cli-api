@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: iudx-cil-api
+    labels:
+        app: iudx-cil-api
+    namespace: iudx-cil-api
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: iudx-cil-api
+    template:
+        metadata:
+            labels:
+                app: iudx-cil-api
+        spec:
+            containers:
+                - name: iudx-cil-api
+                  image: setup-cil-server:latest
+                  imagePullPolicy: IfNotPresent
+                  resources:
+                      limits:
+                          memory: "128Mi"
+                          cpu: "500m"
+                  ports:
+                      - name: http
+                        containerPort: 3030
+                  envFrom:
+                      - secretRef:
+                            # name: timescaledb-secret
+                            name: iudx-cil-secret
