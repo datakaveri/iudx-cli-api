@@ -23,12 +23,23 @@ type SpatialForecastModel struct{}
 func (m SpatialForecastModel) GetSpatialForecasts(startTime time.Time, endTime time.Time, measuredValue string) (spatialForecast []SpatialForecast, spatialForecastMinMax []SpatialForecastMinMax, err error) {
 
 	_, err = db.GetDB().Select(&spatialForecast, `
-		select kdmc_aqm_geojsons.geojson,
-		kdmc_aqm_interpolation_forecast_data.observationdatetime, kdmc_aqm_interpolation_forecast_data.`+measuredValue+` as pollutant_val
-		from kdmc_aqm_geojsons
-		inner join kdmc_aqm_interpolation_forecast_data on kdmc_aqm_geojsons.hex_id = kdmc_aqm_interpolation_forecast_data.hex_id
-		where observationdatetime >= $1 and observationdatetime <= $2
-		order by kdmc_aqm_interpolation_forecast_data.observationdatetime
+		WITH RankedData AS (
+			select 
+			kdmc_aqm_geojsons.geojson as geojson,
+			kdmc_aqm_interpolation_forecast_data.observationdatetime as observationdatetime, 
+			kdmc_aqm_interpolation_forecast_data.`+measuredValue+` as pollutant_val, 
+			ROW_NUMBER() OVER (PARTITION BY kdmc_aqm_interpolation_forecast_data.hex_id, 
+			kdmc_aqm_interpolation_forecast_data.observationdatetime 
+			ORDER BY kdmc_aqm_interpolation_forecast_data.prediction_time DESC) AS RowNum
+			from kdmc_aqm_interpolation_forecast_data
+			inner join kdmc_aqm_geojsons on kdmc_aqm_geojsons.hex_id = kdmc_aqm_interpolation_forecast_data.hex_id
+			where kdmc_aqm_interpolation_forecast_data.observationdatetime >= $1 
+			and kdmc_aqm_interpolation_forecast_data.observationdatetime <= $2
+		)
+		SELECT geojson, observationdatetime, pollutant_val
+		FROM RankedData
+		WHERE RowNum = 1
+		order by observationdatetime
 	`, startTime, endTime)
 
 	_, err = db.GetDB().Select(&spatialForecastMinMax, `
