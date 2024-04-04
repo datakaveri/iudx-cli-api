@@ -1,8 +1,25 @@
 version: "3"
 services:
-    timescale:
-        container_name: iudx-cil-timescaledb
-        image: timescale/timescaledb:latest-pg13
+    # timescale:
+    #     container_name: iudx-cil-timescaledb
+    #     image: timescale/timescaledb:latest-pg13
+    #     ports:
+    #         - 5432:5432
+    #     environment:
+    #         - TZ=Asia/Kolkata
+    #         - POSTGRES_PASSWORD=timescaledb
+    #         - POSTGRES_USER=root
+    #         - POSTGRES_DB=iudx-cil
+    #         - PGDATA=/var/lib/postgresql/data/pgdata
+    #     networks:
+    #         - cil-net
+    #     volumes:
+    #         - db-data:/var/lib/postgresql/data/pgdata
+    #         - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
+
+    timescale_new:
+        container_name: iudx-cil-timescale-new
+        image: timescale/timescaledb-ha:pg14-latest
         ports:
             - 5432:5432
         environment:
@@ -10,12 +27,8 @@ services:
             - POSTGRES_PASSWORD=timescaledb
             - POSTGRES_USER=root
             - POSTGRES_DB=iudx-cil
-            - PGDATA=/var/lib/postgresql/data/pgdata
         networks:
             - cil-net
-        volumes:
-            - db-data:/var/lib/postgresql/data/pgdata
-            - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
 
     # pgadmin:
     #   image: dpage/pgadmin4
@@ -32,19 +45,26 @@ services:
     cil-server:
         build:
             context: ../
-            dockerfile: setup/Dockerfile
+            dockerfile: setup/Dockerfile.prod
         container_name: cil-server
         env_file:
             - ../.env
         volumes:
             - ../:/app
+            - ../health:/health
         ports:
             - 3030:3030
         depends_on:
-            - timescale
+            - timescale_new
         networks:
             - cil-net
         restart: on-failure
+        # healthcheck:
+        #     test: curl --fail http://localhost:3030/health || exit 1
+        #     interval: 10s
+        #     timeout: 30s
+        #     retries: 3
+        #     start_period: 60s
 
 volumes:
     db-data:

@@ -6,5 +6,7 @@ data
 
 setup/kubernetes_timescaledb
 setup/Dockerfile.prod
+env
+.env
 
 main
