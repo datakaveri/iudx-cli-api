@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: cil-server-deployment
+    namespace: dbspace
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: cil-server
+    template:
+        metadata:
+            labels:
+                app: cil-server
+        spec:
+            imagePullSecrets:
+                - name: regcred
+            containers:
+                - name: cil-server-container
+                  image: private-registry.iudx.org.in/pimpri-aqm-cil:1.0
+                  #        env:
+                  #        - name: GO_ENV
+                  #          value: "dev"
+                  #        - name: GIN_MODE
+                  #          value: "release"
+                  #        - name: API_PORT
+                  #          value: "3030"
+                  #        - name: POSTGRES_USER
+                  #          value: "postgres"
+                  #        - name: POSTGRES_PASSWORD
+                  #          value: timescaledbpg
+                  #        - name: POSTGRES_HOST
+                  #          value: "65.0.127.208"
+                  #        - name: POSTGRES_PORT
+                  #          value: "32587"
+                  #        - name: POSTGRES_DB
+                  #          value: "postgresdb"
+                  #        - name: API_AUTH_KEY
+                  #          value: "ri:skdcl.in/56b48464a1ef630205c17e1a0b538a7664cc103e/kdmc.cop-nec.iudx.org.in/kalyan-dombivli-env-aqm/aqm-info"
+                  volumeMounts:
+                      - name: template
+                        mountPath: /app/templates/landing.html
+                        subPath: landing.html
+                      - name: env
+                        mountPath: /app/.env
+                        subPath: .env
+                  ports:
+                      - containerPort: 3030
+            volumes:
+                - name: template
+                  configMap:
+                      name: template
+                - name: env
+                  configMap:
+                      name: env
+            nodeSelector:
+                target.application: timescale-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: cil-service
+    namespace: dbspace
+spec:
+    ports:
+        - port: 3030
+          targetPort: 3030
+          protocol: TCP
+    selector:
+        app: cil-server
