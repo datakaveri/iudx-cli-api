@@ -2,7 +2,6 @@ package routes
 
 import (
 	"iudx_domain_specific_apis/pkg/controllers"
-	"iudx_domain_specific_apis/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,10 +21,10 @@ func AirQuality(router *gin.Engine) {
 	// router.POST("/airquality/spatialInterpolation", middleware.APIKeyAuthMiddleware(), spatialInterpolation.GetSpatialInterpolation)
 
 	spatialForecast := new(controllers.SpatialForecastController)
-	router.POST("/airquality/pimpriSpatialForecast", middleware.APIKeyAuthMiddleware(), spatialForecast.GetSpatialForecast)
+	router.POST("/airquality/pimpriSpatialForecast", spatialForecast.GetSpatialForecast)
 
 	spatialInterpolation := new(controllers.SpatialInterpolationController)
-	router.POST("/airquality/pimpriSpatialInterpolation", middleware.APIKeyAuthMiddleware(), spatialInterpolation.GetSpatialInterpolation)
+	router.POST("/airquality/pimpriSpatialInterpolation", spatialInterpolation.GetSpatialInterpolation)
 
 	landing := new(controllers.LandingController)
 	router.GET("/", landing.Landing)
